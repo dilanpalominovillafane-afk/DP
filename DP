@@ -877,4 +877,3 @@ TweenService:Create(
 ):Play()
 
 status("Auto Clicker: FUERA DE SERVICIO")
-```

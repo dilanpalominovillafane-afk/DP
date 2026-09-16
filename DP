@@ -1,20 +1,20 @@
 --// DP HUB - STRONGMAN SIMULATOR
---// UI compacta + estado fijo + Auto Clicker + Auto Farm
---// Teleports 5x/10x/15x/20x bloqueados + 25x funcional
+--// UI + Auto Farm + Auto Clicker 160 CPS + Teleports + Speed
+--// Scroll más suave + Estado fijo
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
-local UserInputService = game:GetService("UserInputService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
+local UserInputService = game:GetService("UserInputService")
 
 local LocalPlayer = Players.LocalPlayer
 
 --==================================================
--- CONFIGURACIÓN
+-- CONFIG
 --==================================================
 
-local FARM_SPEED = 500
+local SPEED = 500
 local PLAYER_SPEED = 16
 
 local CLICK_CPS = 160
@@ -31,7 +31,7 @@ local posB = nil
 
 local farmActivo = false
 local autoClickActivo = false
-local instantInteraction = false
+local instantActivo = false
 
 --==================================================
 -- GUI
@@ -41,23 +41,25 @@ local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "DP_HUB"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.IgnoreGuiInset = true
 
 local parentGui
 
-if typeof(gethui) == "function" then
+pcall(function()
     parentGui = gethui()
-else
+end)
+
+if not parentGui then
     parentGui = LocalPlayer:WaitForChild("PlayerGui")
 end
 
 ScreenGui.Parent = parentGui
 
 --==================================================
--- FRAME PRINCIPAL
+-- MAIN
 --==================================================
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.Size = UDim2.new(0, 370, 0, 500)
 MainFrame.Position = UDim2.new(0.5, -185, 0.5, -250)
@@ -67,8 +69,7 @@ MainFrame.Active = true
 
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,12)
 
-local MainStroke = Instance.new("UIStroke")
-MainStroke.Parent = MainFrame
+local MainStroke = Instance.new("UIStroke", MainFrame)
 MainStroke.Color = Color3.fromRGB(70,70,82)
 MainStroke.Thickness = 1
 
@@ -81,25 +82,24 @@ Header.Parent = MainFrame
 Header.Size = UDim2.new(1,0,0,58)
 Header.BackgroundColor3 = Color3.fromRGB(31,31,38)
 Header.BorderSizePixel = 0
-Header.Active = true
 
-Instance.new("UICorner", Header).CornerRadius = UDim.new(0,12)
+Instance.new("UICorner",Header).CornerRadius = UDim.new(0,12)
 
 local HeaderFix = Instance.new("Frame")
 HeaderFix.Parent = Header
 HeaderFix.Position = UDim2.new(0,0,0.5,0)
 HeaderFix.Size = UDim2.new(1,0,0.5,0)
-HeaderFix.BackgroundColor3 = Header.BackgroundColor3
+HeaderFix.BackgroundColor3 = Color3.fromRGB(31,31,38)
 HeaderFix.BorderSizePixel = 0
 
 local Title = Instance.new("TextLabel")
 Title.Parent = Header
 Title.BackgroundTransparency = 1
 Title.Position = UDim2.new(0,18,0,7)
-Title.Size = UDim2.new(1,-100,0,25)
+Title.Size = UDim2.new(1,-110,0,25)
 Title.Font = Enum.Font.GothamBold
 Title.Text = "◆ DP HUB"
-Title.TextColor3 = Color3.new(1,1,1)
+Title.TextColor3 = Color3.fromRGB(255,255,255)
 Title.TextSize = 18
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -107,7 +107,7 @@ local Subtitle = Instance.new("TextLabel")
 Subtitle.Parent = Header
 Subtitle.BackgroundTransparency = 1
 Subtitle.Position = UDim2.new(0,19,0,31)
-Subtitle.Size = UDim2.new(1,-100,0,18)
+Subtitle.Size = UDim2.new(1,-110,0,18)
 Subtitle.Font = Enum.Font.Gotham
 Subtitle.Text = "Strongman Simulator"
 Subtitle.TextColor3 = Color3.fromRGB(150,150,160)
@@ -115,43 +115,45 @@ Subtitle.TextSize = 11
 Subtitle.TextXAlignment = Enum.TextXAlignment.Left
 
 --==================================================
--- MINIMIZAR
+-- MINIMIZE
 --==================================================
 
 local MinimizeButton = Instance.new("TextButton")
 MinimizeButton.Parent = Header
-MinimizeButton.Size = UDim2.new(0,38,0,38)
-MinimizeButton.Position = UDim2.new(1,-82,0,10)
+MinimizeButton.Size = UDim2.new(0,32,0,32)
+MinimizeButton.Position = UDim2.new(1,-78,0,13)
 MinimizeButton.BackgroundColor3 = Color3.fromRGB(45,45,53)
 MinimizeButton.BorderSizePixel = 0
 MinimizeButton.Text = "−"
-MinimizeButton.TextColor3 = Color3.new(1,1,1)
+MinimizeButton.TextColor3 = Color3.fromRGB(220,220,225)
 MinimizeButton.Font = Enum.Font.GothamBold
 MinimizeButton.TextSize = 20
 MinimizeButton.AutoButtonColor = false
 
-Instance.new("UICorner", MinimizeButton).CornerRadius = UDim.new(0,9)
+Instance.new("UICorner",MinimizeButton).CornerRadius = UDim.new(0,8)
 
 --==================================================
--- CERRAR
+-- CLOSE
 --==================================================
 
 local CloseButton = Instance.new("TextButton")
 CloseButton.Parent = Header
-CloseButton.Size = UDim2.new(0,38,0,38)
-CloseButton.Position = UDim2.new(1,-42,0,10)
+CloseButton.Size = UDim2.new(0,32,0,32)
+CloseButton.Position = UDim2.new(1,-42,0,13)
 CloseButton.BackgroundColor3 = Color3.fromRGB(45,45,53)
 CloseButton.BorderSizePixel = 0
 CloseButton.Text = "×"
-CloseButton.TextColor3 = Color3.new(1,1,1)
+CloseButton.TextColor3 = Color3.fromRGB(220,220,225)
 CloseButton.Font = Enum.Font.GothamBold
 CloseButton.TextSize = 20
 CloseButton.AutoButtonColor = false
 
-Instance.new("UICorner", CloseButton).CornerRadius = UDim.new(0,9)
+Instance.new("UICorner",CloseButton).CornerRadius = UDim.new(0,8)
 
 CloseButton.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
+    ScreenGui.Enabled = false
+    autoClickActivo = false
+    farmActivo = false
 end)
 
 --==================================================
@@ -160,44 +162,78 @@ end)
 
 local Scroll = Instance.new("ScrollingFrame")
 Scroll.Parent = MainFrame
-Scroll.Position = UDim2.new(0,8,0,68)
-Scroll.Size = UDim2.new(1,-16,1,-125)
+Scroll.Position = UDim2.new(0,0,0,58)
+Scroll.Size = UDim2.new(1,0,1,-58)
 Scroll.BackgroundTransparency = 1
 Scroll.BorderSizePixel = 0
-Scroll.ScrollBarThickness = 6
-Scroll.ScrollBarImageColor3 = Color3.fromRGB(100,100,110)
-Scroll.CanvasSize = UDim2.new(0,0,0,0)
-Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-Scroll.Active = true
+Scroll.CanvasSize = UDim2.new(0,0,0,610)
+Scroll.ScrollBarThickness = 5
+Scroll.ScrollBarImageTransparency = 0.25
+Scroll.ScrollingDirection = Enum.ScrollingDirection.Y
+Scroll.ElasticBehavior = Enum.ElasticBehavior.WhenScrollable
+
+-- Scroll manual más suave
+Scroll.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseWheel then
+        Scroll.CanvasPosition =
+            Scroll.CanvasPosition - Vector2.new(0,input.Position.Z * 25)
+    end
+end)
 
 local Content = Instance.new("Frame")
 Content.Parent = Scroll
-Content.Size = UDim2.new(1,-8,0,0)
-Content.AutomaticSize = Enum.AutomaticSize.Y
+Content.Position = UDim2.new(0,15,0,10)
+Content.Size = UDim2.new(1,-30,0,590)
 Content.BackgroundTransparency = 1
 
 --==================================================
--- FUNCIONES
+-- ESTADO FIJO
 --==================================================
 
-local function createSection(text,y)
+local StatusBackground = Instance.new("Frame")
+StatusBackground.Parent = MainFrame
+StatusBackground.AnchorPoint = Vector2.new(0.5,1)
+StatusBackground.Position = UDim2.new(0.5,-0,1,-7)
+StatusBackground.Size = UDim2.new(1,-20,0,28)
+StatusBackground.BackgroundColor3 = Color3.fromRGB(24,24,29)
+StatusBackground.BackgroundTransparency = 0.08
+StatusBackground.BorderSizePixel = 0
+StatusBackground.ZIndex = 20
 
-    local label = Instance.new("TextLabel")
-    label.Parent = Content
-    label.Position = UDim2.new(0,2,0,y)
-    label.Size = UDim2.new(1,-4,0,22)
-    label.BackgroundTransparency = 1
-    label.Font = Enum.Font.GothamBold
-    label.Text = text
-    label.TextColor3 = Color3.fromRGB(175,175,185)
-    label.TextSize = 12
-    label.TextXAlignment = Enum.TextXAlignment.Left
+local StatusCorner = Instance.new("UICorner",StatusBackground)
+StatusCorner.CornerRadius = UDim.new(0,7)
 
-    return label
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Parent = StatusBackground
+StatusLabel.Size = UDim2.new(1,-12,1,0)
+StatusLabel.Position = UDim2.new(0,6,0,0)
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Font = Enum.Font.Gotham
+StatusLabel.Text = "Estado: Listo"
+StatusLabel.TextColor3 = Color3.fromRGB(160,160,170)
+StatusLabel.TextSize = 11
+StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
+StatusLabel.ZIndex = 21
+
+--==================================================
+-- HELPERS
+--==================================================
+
+local function section(text,y)
+    local l = Instance.new("TextLabel")
+    l.Parent = Content
+    l.Position = UDim2.new(0,2,0,y)
+    l.Size = UDim2.new(1,-4,0,22)
+    l.BackgroundTransparency = 1
+    l.Font = Enum.Font.GothamBold
+    l.Text = text
+    l.TextColor3 = Color3.fromRGB(175,175,185)
+    l.TextSize = 12
+    l.TextXAlignment = Enum.TextXAlignment.Left
+    return l
 end
 
-local function createButton(text,pos,size)
-
+local function button(text,pos,size)
     local b = Instance.new("TextButton")
     b.Parent = Content
     b.Position = pos
@@ -210,21 +246,20 @@ local function createButton(text,pos,size)
     b.TextSize = 12
     b.AutoButtonColor = false
 
-    Instance.new("UICorner",b).CornerRadius = UDim.new(0,8)
+    Instance.new("UICorner",b).CornerRadius = UDim.new(0,7)
 
-    local s = Instance.new("UIStroke")
-    s.Parent = b
+    local s = Instance.new("UIStroke",b)
     s.Color = Color3.fromRGB(65,65,76)
     s.Thickness = 1
 
     b.MouseEnter:Connect(function()
-        if b:GetAttribute("Locked") ~= true then
+        if not b:GetAttribute("Disabled") then
             b.BackgroundColor3 = Color3.fromRGB(52,52,63)
         end
     end)
 
     b.MouseLeave:Connect(function()
-        if b:GetAttribute("Locked") ~= true then
+        if not b:GetAttribute("Disabled") then
             b.BackgroundColor3 = Color3.fromRGB(42,42,51)
         end
     end)
@@ -232,104 +267,94 @@ local function createButton(text,pos,size)
     return b
 end
 
-local function lockButton(b)
-
-    b:SetAttribute("Locked",true)
-    b.BackgroundColor3 = Color3.fromRGB(32,32,38)
-    b.TextColor3 = Color3.fromRGB(100,100,108)
-
-    local s = b:FindFirstChildOfClass("UIStroke")
-    if s then
-        s.Color = Color3.fromRGB(45,45,52)
-    end
-end
-
 --==================================================
 -- PUNTOS
 --==================================================
 
-createSection("📍  PUNTOS",0)
+section("📍  PUNTOS",0)
 
-local BtnSaveA = createButton(
+local BtnSaveA = button(
     "GUARDAR A",
     UDim2.new(0,0,0,27),
-    UDim2.new(0.485,0,0,38)
+    UDim2.new(.485,0,0,38)
 )
 
-local BtnSaveB = createButton(
+local BtnSaveB = button(
     "GUARDAR B",
-    UDim2.new(0.515,0,0,27),
-    UDim2.new(0.485,0,0,38)
+    UDim2.new(.515,0,0,27),
+    UDim2.new(.485,0,0,38)
 )
 
 --==================================================
 -- AUTOMATIZACIÓN
 --==================================================
 
-createSection("⚡  AUTOMATIZACIÓN",80)
+section("⚡  AUTOMATIZACIÓN",80)
 
-local BtnAutoClick = createButton(
+local BtnAutoClick = button(
     "AUTO CLICKER    ● OFF",
     UDim2.new(0,0,0,107),
-    UDim2.new(0.485,0,0,38)
+    UDim2.new(.485,0,0,38)
 )
 
-local BtnToggleFarm = createButton(
+local BtnToggleFarm = button(
     "AUTO-FARM    ● OFF",
-    UDim2.new(0.515,0,0,107),
-    UDim2.new(0.485,0,0,38)
+    UDim2.new(.515,0,0,107),
+    UDim2.new(.485,0,0,38)
 )
 
 --==================================================
 -- ZONAS
 --==================================================
 
-createSection("📍  ZONAS",160)
+section("📍  ZONAS",160)
 
-local Btn5X = createButton(
+local Btn5X = button(
     "TELEPORT 5× 🔒",
     UDim2.new(0,0,0,187),
-    UDim2.new(0.485,0,0,38)
+    UDim2.new(.485,0,0,38)
 )
 
-local Btn10X = createButton(
+local Btn10X = button(
     "TELEPORT 10× 🔒",
-    UDim2.new(0.515,0,0,187),
-    UDim2.new(0.485,0,0,38)
+    UDim2.new(.515,0,0,187),
+    UDim2.new(.485,0,0,38)
 )
 
-local Btn15X = createButton(
+local Btn15X = button(
     "TELEPORT 15× 🔒",
-    UDim2.new(0,0,0,229),
-    UDim2.new(0.485,0,0,38)
+    UDim2.new(0,0,0,231),
+    UDim2.new(.485,0,0,38)
 )
 
-local Btn20X = createButton(
+local Btn20X = button(
     "TELEPORT 20× 🔒",
-    UDim2.new(0.515,0,0,229),
-    UDim2.new(0.485,0,0,38)
+    UDim2.new(.515,0,0,231),
+    UDim2.new(.485,0,0,38)
 )
 
-local Btn25X = createButton(
+local Btn25X = button(
     "TELEPORT 25×",
-    UDim2.new(0,0,0,271),
+    UDim2.new(0,0,0,275),
     UDim2.new(1,0,0,48)
 )
 
-lockButton(Btn5X)
-lockButton(Btn10X)
-lockButton(Btn15X)
-lockButton(Btn20X)
+-- Bloqueados
+for _,b in ipairs({Btn5X,Btn10X,Btn15X,Btn20X}) do
+    b.BackgroundColor3 = Color3.fromRGB(32,32,38)
+    b.TextColor3 = Color3.fromRGB(100,100,108)
+    b:SetAttribute("Disabled",true)
+end
 
 --==================================================
--- CONFIGURACIÓN
+-- CONFIG
 --==================================================
 
-createSection("⚙  CONFIGURACIÓN",333)
+section("⚙  CONFIGURACIÓN",338)
 
 local FarmSpeedLabel = Instance.new("TextLabel")
 FarmSpeedLabel.Parent = Content
-FarmSpeedLabel.Position = UDim2.new(0,0,0,362)
+FarmSpeedLabel.Position = UDim2.new(0,0,0,367)
 FarmSpeedLabel.Size = UDim2.new(.55,0,0,34)
 FarmSpeedLabel.BackgroundTransparency = 1
 FarmSpeedLabel.Font = Enum.Font.GothamMedium
@@ -340,7 +365,7 @@ FarmSpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 local SpeedBox = Instance.new("TextBox")
 SpeedBox.Parent = Content
-SpeedBox.Position = UDim2.new(.57,0,0,362)
+SpeedBox.Position = UDim2.new(.57,0,0,367)
 SpeedBox.Size = UDim2.new(.43,0,0,34)
 SpeedBox.BackgroundColor3 = Color3.fromRGB(38,38,46)
 SpeedBox.BorderSizePixel = 0
@@ -354,7 +379,7 @@ Instance.new("UICorner",SpeedBox).CornerRadius = UDim.new(0,7)
 
 local PlayerSpeedLabel = Instance.new("TextLabel")
 PlayerSpeedLabel.Parent = Content
-PlayerSpeedLabel.Position = UDim2.new(0,0,0,402)
+PlayerSpeedLabel.Position = UDim2.new(0,0,0,407)
 PlayerSpeedLabel.Size = UDim2.new(.55,0,0,34)
 PlayerSpeedLabel.BackgroundTransparency = 1
 PlayerSpeedLabel.Font = Enum.Font.GothamMedium
@@ -365,7 +390,7 @@ PlayerSpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 local PlayerSpeedBox = Instance.new("TextBox")
 PlayerSpeedBox.Parent = Content
-PlayerSpeedBox.Position = UDim2.new(.57,0,0,402)
+PlayerSpeedBox.Position = UDim2.new(.57,0,0,407)
 PlayerSpeedBox.Size = UDim2.new(.43,0,0,34)
 PlayerSpeedBox.BackgroundColor3 = Color3.fromRGB(38,38,46)
 PlayerSpeedBox.BorderSizePixel = 0
@@ -378,112 +403,64 @@ PlayerSpeedBox.ClearTextOnFocus = false
 Instance.new("UICorner",PlayerSpeedBox).CornerRadius = UDim.new(0,7)
 
 --==================================================
--- INTERACCIÓN INSTANTÁNEA
+-- INSTANT INTERACTION
 --==================================================
 
-local InstantButton = createButton(
+local InstantButton = button(
     "⚡ INSTANT INTERACTION    ● OFF",
-    UDim2.new(0,0,0,444),
+    UDim2.new(0,0,0,451),
     UDim2.new(1,0,0,42)
 )
 
-local function aplicarInstantPrompt(prompt)
-
-    if prompt:IsA("ProximityPrompt") then
-        prompt.HoldDuration = 0
+local function activarInstant()
+    for _,obj in ipairs(Workspace:GetDescendants()) do
+        if obj:IsA("ProximityPrompt") then
+            obj.HoldDuration = 0
+        end
     end
-
 end
 
+Workspace.DescendantAdded:Connect(function(obj)
+    if instantActivo and obj:IsA("ProximityPrompt") then
+        obj.HoldDuration = 0
+    end
+end)
+
 InstantButton.MouseButton1Click:Connect(function()
+    instantActivo = not instantActivo
 
-    instantInteraction = not instantInteraction
-
-    if instantInteraction then
-
-        for _,obj in ipairs(Workspace:GetDescendants()) do
-            aplicarInstantPrompt(obj)
-        end
-
+    if instantActivo then
+        activarInstant()
         InstantButton.Text = "⚡ INSTANT INTERACTION    ● ON"
         InstantButton.BackgroundColor3 = Color3.fromRGB(45,135,75)
-
         StatusLabel.Text = "Estado: Interacción instantánea ON"
-
     else
-
         InstantButton.Text = "⚡ INSTANT INTERACTION    ● OFF"
         InstantButton.BackgroundColor3 = Color3.fromRGB(42,42,51)
-
         StatusLabel.Text = "Estado: Interacción instantánea OFF"
-
     end
-
-end)
-
-Workspace.DescendantAdded:Connect(function(obj)
-
-    if instantInteraction then
-        aplicarInstantPrompt(obj)
-    end
-
 end)
 
 --==================================================
--- ESTADO FIJO
---==================================================
-
-local StatusBackground = Instance.new("Frame")
-StatusBackground.Parent = MainFrame
-StatusBackground.Position = UDim2.new(0,8,1,-51)
-StatusBackground.Size = UDim2.new(1,-16,0,43)
-StatusBackground.BackgroundColor3 = Color3.fromRGB(24,24,29)
-StatusBackground.BackgroundTransparency = 0.12
-StatusBackground.BorderSizePixel = 0
-StatusBackground.Active = false
-StatusBackground.ZIndex = 20
-
-Instance.new("UICorner",StatusBackground).CornerRadius = UDim.new(0,8)
-
-local StatusLabel = Instance.new("TextLabel")
-StatusLabel.Parent = StatusBackground
-StatusLabel.Position = UDim2.new(0,10,0,0)
-StatusLabel.Size = UDim2.new(1,-20,1,0)
-StatusLabel.BackgroundTransparency = 1
-StatusLabel.Font = Enum.Font.Gotham
-StatusLabel.Text = "Estado: Listo"
-StatusLabel.TextColor3 = Color3.fromRGB(175,175,185)
-StatusLabel.TextSize = 11
-StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
-StatusLabel.TextTruncate = Enum.TextTruncate.AtEnd
-StatusLabel.Active = false
-StatusLabel.ZIndex = 21
-
---==================================================
--- VELOCIDAD
+-- VELOCIDADES
 --==================================================
 
 SpeedBox.FocusLost:Connect(function()
-
     local n = tonumber(SpeedBox.Text)
 
     if n and n > 0 then
-        FARM_SPEED = n
+        SPEED = n
         SpeedBox.Text = tostring(n)
         StatusLabel.Text = "Estado: Farm Speed = "..n
     else
-        SpeedBox.Text = tostring(FARM_SPEED)
-        StatusLabel.Text = "Estado: velocidad inválida"
+        SpeedBox.Text = tostring(SPEED)
     end
-
 end)
 
 PlayerSpeedBox.FocusLost:Connect(function()
-
     local n = tonumber(PlayerSpeedBox.Text)
 
     if n and n > 0 then
-
         PLAYER_SPEED = n
         PlayerSpeedBox.Text = tostring(n)
 
@@ -491,76 +468,60 @@ PlayerSpeedBox.FocusLost:Connect(function()
         local hum = char and char:FindFirstChildOfClass("Humanoid")
 
         if hum then
-            hum.WalkSpeed = PLAYER_SPEED
+            hum.WalkSpeed = n
         end
 
         StatusLabel.Text = "Estado: Player Speed = "..n
-
     else
         PlayerSpeedBox.Text = tostring(PLAYER_SPEED)
-        StatusLabel.Text = "Estado: Player Speed inválida"
     end
-
 end)
 
 LocalPlayer.CharacterAdded:Connect(function(char)
-
     task.wait(.5)
 
     local hum = char:FindFirstChildOfClass("Humanoid")
-
     if hum then
         hum.WalkSpeed = PLAYER_SPEED
     end
-
 end)
 
 --==================================================
--- GUARDAR PUNTOS
+-- GUARDAR A/B
 --==================================================
 
 BtnSaveA.MouseButton1Click:Connect(function()
-
     local char = LocalPlayer.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
 
     if hrp then
-
         posA = hrp.CFrame
-
         BtnSaveA.Text = "A GUARDADO ✓"
         StatusLabel.Text = "Estado: Punto A guardado."
 
-        task.delay(1.5,function()
+        task.delay(1.2,function()
             if BtnSaveA.Parent then
                 BtnSaveA.Text = "GUARDAR A"
             end
         end)
-
     end
-
 end)
 
 BtnSaveB.MouseButton1Click:Connect(function()
-
     local char = LocalPlayer.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
 
     if hrp then
-
         posB = hrp.CFrame
-
         BtnSaveB.Text = "B GUARDADO ✓"
         StatusLabel.Text = "Estado: Punto B guardado."
 
-        task.delay(1.5,function()
+        task.delay(1.2,function()
             if BtnSaveB.Parent then
                 BtnSaveB.Text = "GUARDAR B"
             end
         end)
-
     end
-
 end)
 
 --==================================================
@@ -568,56 +529,19 @@ end)
 --==================================================
 
 Btn25X.MouseButton1Click:Connect(function()
-
     local char = LocalPlayer.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
 
     if hrp then
-
         hrp.CFrame = CFrame.new(POS_25X)
         StatusLabel.Text = "Estado: Teleport 25× ✓"
-
-    else
-        StatusLabel.Text = "Estado: personaje no encontrado"
     end
-
 end)
 
 --==================================================
--- AUTO CLICKER
+-- AUTO CLICKER 160 CPS
+-- CLICK EXACTAMENTE EN EL CENTRO DEL VIEWPORT
 --==================================================
-
-local function hacerClick()
-
-    local camera = Workspace.CurrentCamera
-
-    if not camera then
-        return
-    end
-
-    local viewport = camera.ViewportSize
-    local x = viewport.X / 2
-    local y = viewport.Y / 2
-
-    -- Método 1
-    pcall(function()
-
-        VirtualInputManager:SendMouseButtonEvent(
-            x,y,0,true,game,0
-        )
-
-        VirtualInputManager:SendMouseButtonEvent(
-            x,y,0,false,game,0
-        )
-
-    end)
-
-    -- Método alternativo de executor
-    if typeof(mouse1click) == "function" then
-        pcall(mouse1click)
-    end
-
-end
 
 BtnAutoClick.MouseButton1Click:Connect(function()
 
@@ -627,14 +551,35 @@ BtnAutoClick.MouseButton1Click:Connect(function()
 
         BtnAutoClick.Text = "AUTO CLICKER    ● ON"
         BtnAutoClick.BackgroundColor3 = Color3.fromRGB(45,135,75)
-
-        StatusLabel.Text = "Estado: Auto Clicker 160 CPS"
+        StatusLabel.Text = "Estado: Auto Clicker 160 CPS ON"
 
         task.spawn(function()
 
             while autoClickActivo do
 
-                hacerClick()
+                pcall(function()
+
+                    local camera = Workspace.CurrentCamera
+
+                    if camera then
+
+                        local viewport = camera.ViewportSize
+
+                        -- CENTRO REAL DE LA PANTALLA
+                        local x = viewport.X / 2
+                        local y = viewport.Y / 2
+
+                        VirtualInputManager:SendMouseButtonEvent(
+                            x,y,0,true,game,0
+                        )
+
+                        VirtualInputManager:SendMouseButtonEvent(
+                            x,y,0,false,game,0
+                        )
+
+                    end
+
+                end)
 
                 task.wait(CLICK_INTERVAL)
 
@@ -646,7 +591,6 @@ BtnAutoClick.MouseButton1Click:Connect(function()
 
         BtnAutoClick.Text = "AUTO CLICKER    ● OFF"
         BtnAutoClick.BackgroundColor3 = Color3.fromRGB(42,42,51)
-
         StatusLabel.Text = "Estado: Auto Clicker detenido."
 
     end
@@ -654,7 +598,7 @@ BtnAutoClick.MouseButton1Click:Connect(function()
 end)
 
 --==================================================
--- PROXIMITY PROMPTS
+-- PROXIMITY
 --==================================================
 
 local function presionarEnRango()
@@ -662,19 +606,17 @@ local function presionarEnRango()
     local char = LocalPlayer.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
 
-    if not hrp then
-        return
-    end
+    if not hrp then return end
 
-    for _,prompt in ipairs(Workspace:GetDescendants()) do
+    for _,obj in ipairs(Workspace:GetDescendants()) do
 
         if not farmActivo then
             break
         end
 
-        if prompt:IsA("ProximityPrompt") then
+        if obj:IsA("ProximityPrompt") then
 
-            local parent = prompt.Parent
+            local parent = obj.Parent
             local part
 
             if parent:IsA("BasePart") then
@@ -685,18 +627,13 @@ local function presionarEnRango()
 
             if part then
 
-                local distancia =
+                local distance =
                     (hrp.Position - part.Position).Magnitude
 
-                if distancia <= 35 then
+                if distance <= 35 then
 
                     pcall(function()
-                        prompt:InputHoldBegin()
-                        prompt:InputHoldEnd()
-                    end)
-
-                    pcall(function()
-                        fireproximityprompt(prompt,0)
+                        fireproximityprompt(obj,0)
                     end)
 
                 end
@@ -710,7 +647,7 @@ local function presionarEnRango()
 end
 
 --==================================================
--- MOVIMIENTO
+-- MOVIMIENTO FARM
 --==================================================
 
 local function moverConTween(destino)
@@ -725,13 +662,15 @@ local function moverConTween(destino)
     local distancia =
         (hrp.Position - destino.Position).Magnitude
 
-    local duracion = math.max(distancia / FARM_SPEED,0.05)
+    local duracion =
+        math.max(distancia / math.max(SPEED,1),0.05)
 
     local tween = TweenService:Create(
         hrp,
         TweenInfo.new(
             duracion,
-            Enum.EasingStyle.Linear
+            Enum.EasingStyle.Linear,
+            Enum.EasingDirection.Out
         ),
         {
             CFrame = destino + Vector3.new(0,1,0)
@@ -740,32 +679,27 @@ local function moverConTween(destino)
 
     tween:Play()
 
-    local terminado = false
+    while tween.PlaybackState == Enum.PlaybackState.Playing do
 
-    tween.Completed:Connect(function()
-        terminado = true
-    end)
+        if not farmActivo then
+            tween:Cancel()
+            return false
+        end
 
-    while not terminado and farmActivo do
         task.wait()
-    end
 
-    if not farmActivo then
-        tween:Cancel()
-        return false
     end
 
     return true
 end
 
 --==================================================
--- CICLO FARM
+-- AUTO FARM
 --==================================================
 
 local function cicloFarm()
 
     if not posA or not posB then
-        StatusLabel.Text = "Estado: guarda A y B primero."
         return
     end
 
@@ -773,45 +707,27 @@ local function cicloFarm()
         return
     end
 
-    StatusLabel.Text = "Estado: viajando a A..."
+    StatusLabel.Text = "Estado: Viajando a A..."
+    if not moverConTween(posA) then return end
 
-    if not moverConTween(posA) then
-        return
-    end
+    if not farmActivo then return end
 
-    if not farmActivo then
-        return
-    end
-
-    StatusLabel.Text = "Estado: recogiendo..."
+    StatusLabel.Text = "Estado: Recogiendo..."
 
     local inicio = tick()
 
-    while farmActivo and tick() - inicio < 2.5 do
-
-        presionarEnRango()
-
+    while farmActivo and tick()-inicio < 2.5 do
+        pcall(presionarEnRango)
         task.wait(.05)
-
     end
 
-    if not farmActivo then
-        return
-    end
+    if not farmActivo then return end
 
-    StatusLabel.Text = "Estado: entregando en B..."
+    StatusLabel.Text = "Estado: Entregando en B..."
+    if not moverConTween(posB) then return end
 
-    moverConTween(posB)
-
-    if farmActivo then
-        task.wait(.6)
-    end
-
+    task.wait(.6)
 end
-
---==================================================
--- AUTO FARM
---==================================================
 
 local function cambiarFarm()
 
@@ -819,7 +735,11 @@ local function cambiarFarm()
 
     if farmActivo then
 
-        MainFrame:SetAttribute("FarmActivo",true)
+        if not posA or not posB then
+            farmActivo = false
+            StatusLabel.Text = "Estado: Primero guarda A y B."
+            return
+        end
 
         BtnToggleFarm.Text = "AUTO-FARM    ● ON"
         BtnToggleFarm.BackgroundColor3 = Color3.fromRGB(45,135,75)
@@ -829,23 +749,13 @@ local function cambiarFarm()
         task.spawn(function()
 
             while farmActivo do
-
-                local ok,err = pcall(cicloFarm)
-
-                if not ok then
-                    StatusLabel.Text = "Estado: error del farm"
-                    task.wait(.5)
-                end
-
+                pcall(cicloFarm)
                 task.wait(.1)
-
             end
 
         end)
 
     else
-
-        MainFrame:SetAttribute("FarmActivo",false)
 
         BtnToggleFarm.Text = "AUTO-FARM    ● OFF"
         BtnToggleFarm.BackgroundColor3 = Color3.fromRGB(42,42,51)
@@ -856,19 +766,10 @@ local function cambiarFarm()
 
 end
 
-BtnToggleFarm.MouseButton1Click:Connect(function()
-
-    if not posA or not posB then
-        StatusLabel.Text = "Estado: primero guarda A y B."
-        return
-    end
-
-    cambiarFarm()
-
-end)
+BtnToggleFarm.MouseButton1Click:Connect(cambiarFarm)
 
 --==================================================
--- ARRASTRAR
+-- DRAG
 --==================================================
 
 local dragging = false
@@ -884,16 +785,11 @@ Header.InputBegan:Connect(function(input)
         dragStart = input.Position
         startPos = MainFrame.Position
 
-    end
-
-end)
-
-Header.InputEnded:Connect(function(input)
-
-    if input.UserInputType == Enum.UserInputType.MouseButton1
-        or input.UserInputType == Enum.UserInputType.Touch then
-
-        dragging = false
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
 
     end
 
@@ -901,9 +797,7 @@ end)
 
 UserInputService.InputChanged:Connect(function(input)
 
-    if not dragging then
-        return
-    end
+    if not dragging then return end
 
     if input.UserInputType == Enum.UserInputType.MouseMovement
         or input.UserInputType == Enum.UserInputType.Touch then
@@ -933,15 +827,13 @@ MinimizeButton.MouseButton1Click:Connect(function()
     minimized = not minimized
 
     if minimized then
-
         Scroll.Visible = false
         StatusBackground.Visible = false
-
         MinimizeButton.Text = "+"
 
         TweenService:Create(
             MainFrame,
-            TweenInfo.new(.2),
+            TweenInfo.new(.22,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),
             {Size = UDim2.new(0,370,0,58)}
         ):Play()
 
@@ -951,17 +843,15 @@ MinimizeButton.MouseButton1Click:Connect(function()
 
         TweenService:Create(
             MainFrame,
-            TweenInfo.new(.2),
+            TweenInfo.new(.22,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),
             {Size = normalSize}
         ):Play()
 
-        task.delay(.2,function()
-
+        task.delay(.18,function()
             if not minimized then
                 Scroll.Visible = true
                 StatusBackground.Visible = true
             end
-
         end)
 
     end
@@ -969,6 +859,5 @@ MinimizeButton.MouseButton1Click:Connect(function()
 end)
 
 print("DP HUB cargado correctamente.")
-print("Auto Clicker: 160 CPS configurado.")
-print("Teleport 25× configurado.")
-print("Estado fijo activado.")
+print("Auto Clicker: 160 CPS / centro de pantalla.")
+print("Scroll suavizado.")

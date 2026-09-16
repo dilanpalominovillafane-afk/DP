@@ -1,6 +1,7 @@
+```lua
 --==================================================
 -- DP HUB - ROBLOX STUDIO
--- Versión para tu propia experiencia
+-- Auto Clicker fuera de servicio
 --==================================================
 
 local Players = game:GetService("Players")
@@ -18,9 +19,6 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 local FARM_SPEED = 500
 local PLAYER_SPEED = 16
 
-local CLICK_CPS = 160
-local CLICK_INTERVAL = 1 / CLICK_CPS
-
 local POS_25X = Vector3.new(
 	4972.630371,
 	53.056335,
@@ -35,10 +33,8 @@ local posA = nil
 local posB = nil
 
 local farmActivo = false
-local autoClickActivo = false
 local instantActivo = false
 
-local guiVisible = true
 local minimized = false
 
 local character
@@ -46,6 +42,7 @@ local humanoid
 local root
 
 local function actualizarCharacter()
+
 	character = Player.Character or Player.CharacterAdded:Wait()
 	humanoid = character:WaitForChild("Humanoid")
 	root = character:WaitForChild("HumanoidRootPart")
@@ -56,8 +53,10 @@ end
 actualizarCharacter()
 
 Player.CharacterAdded:Connect(function()
+
 	task.wait(0.5)
 	actualizarCharacter()
+
 end)
 
 --==================================================
@@ -269,7 +268,7 @@ local BtnSaveB = button(
 section("⚡  AUTOMATIZACIÓN", 80)
 
 local BtnAutoClick = button(
-	"AUTO CLICKER    ● OFF",
+	"AUTO CLICKER    ⚠ FUERA DE SERVICIO",
 	0,
 	107,
 	0.485
@@ -281,6 +280,10 @@ local BtnFarm = button(
 	107,
 	0.485
 )
+
+-- Auto Clicker deshabilitado visualmente
+BtnAutoClick.BackgroundColor3 = Color3.fromRGB(32, 32, 38)
+BtnAutoClick.TextColor3 = Color3.fromRGB(105, 105, 115)
 
 --==================================================
 -- ZONAS
@@ -323,15 +326,16 @@ local Btn25X = button(
 	0.985
 )
 
--- Bloqueados hasta añadir sus coordenadas
 for _, b in ipairs({
 	Btn5X,
 	Btn10X,
 	Btn15X,
 	Btn20X
 }) do
+
 	b.BackgroundColor3 = Color3.fromRGB(32, 32, 38)
 	b.TextColor3 = Color3.fromRGB(100, 100, 108)
+
 end
 
 --==================================================
@@ -447,6 +451,7 @@ PlayerBox.FocusLost:Connect(function()
 	local value = tonumber(PlayerBox.Text)
 
 	if value then
+
 		PLAYER_SPEED = math.clamp(value, 0, 500)
 
 		if humanoid then
@@ -454,9 +459,13 @@ PlayerBox.FocusLost:Connect(function()
 		end
 
 		PlayerBox.Text = tostring(PLAYER_SPEED)
+
 		status("Player Speed: " .. PLAYER_SPEED)
+
 	else
+
 		PlayerBox.Text = tostring(PLAYER_SPEED)
+
 	end
 end)
 
@@ -469,12 +478,17 @@ SpeedBox.FocusLost:Connect(function()
 	local value = tonumber(SpeedBox.Text)
 
 	if value then
+
 		FARM_SPEED = math.clamp(value, 1, 5000)
+
 		SpeedBox.Text = tostring(FARM_SPEED)
 
 		status("Farm Speed: " .. FARM_SPEED)
+
 	else
+
 		SpeedBox.Text = tostring(FARM_SPEED)
+
 	end
 end)
 
@@ -485,15 +499,19 @@ end)
 BtnSaveA.MouseButton1Click:Connect(function()
 
 	if root then
+
 		posA = root.CFrame
 
 		BtnSaveA.Text = "✓ A GUARDADO"
+
 		status("Punto A guardado")
 
 		task.delay(1.2, function()
-			if BtnSaveA then
+
+			if BtnSaveA.Parent then
 				BtnSaveA.Text = "GUARDAR A"
 			end
+
 		end)
 	end
 end)
@@ -505,15 +523,19 @@ end)
 BtnSaveB.MouseButton1Click:Connect(function()
 
 	if root then
+
 		posB = root.CFrame
 
 		BtnSaveB.Text = "✓ B GUARDADO"
+
 		status("Punto B guardado")
 
 		task.delay(1.2, function()
-			if BtnSaveB then
+
+			if BtnSaveB.Parent then
 				BtnSaveB.Text = "GUARDAR B"
 			end
+
 		end)
 	end
 end)
@@ -529,6 +551,7 @@ Btn25X.MouseButton1Click:Connect(function()
 		root.CFrame = CFrame.new(POS_25X)
 
 		status("Teleport 25× realizado")
+
 	end
 end)
 
@@ -567,6 +590,7 @@ BtnInstant.MouseButton1Click:Connect(function()
 		BtnInstant.Text = "INTERACCIÓN INSTANTÁNEA    ● OFF"
 
 		status("Interacción instantánea desactivada")
+
 	end
 end)
 
@@ -579,72 +603,13 @@ end)
 
 --==================================================
 -- AUTO CLICKER
+-- FUERA DE SERVICIO
 --==================================================
--- Para tu propia experiencia:
---
--- Crea un TextButton llamado "TrainingButton"
--- dentro de PlayerGui.
---
--- Ese botón representa la acción de entrenamiento.
--- El Auto Clicker lo activará 160 veces por segundo.
-
-local function buscarTrainingButton()
-
-	local found = PlayerGui:FindFirstChild("TrainingButton", true)
-
-	if found and found:IsA("GuiButton") then
-		return found
-	end
-
-	return nil
-end
-
-local function ejecutarEntrenamiento()
-
-	local trainingButton = buscarTrainingButton()
-
-	if trainingButton then
-		trainingButton:Activate()
-		return true
-	end
-
-	return false
-end
-
-task.spawn(function()
-
-	while true do
-
-		if autoClickActivo then
-
-			ejecutarEntrenamiento()
-
-			task.wait(CLICK_INTERVAL)
-
-		else
-
-			task.wait(0.05)
-		end
-	end
-end)
 
 BtnAutoClick.MouseButton1Click:Connect(function()
 
-	autoClickActivo = not autoClickActivo
+	status("Auto Clicker: FUERA DE SERVICIO")
 
-	if autoClickActivo then
-
-		BtnAutoClick.Text = "AUTO CLICKER    ● ON"
-		status("Auto Clicker: 160 CPS")
-
-		-- No se desactiva automáticamente por hacer clic
-		-- en otras partes del HUB.
-
-	else
-
-		BtnAutoClick.Text = "AUTO CLICKER    ● OFF"
-		status("Auto Clicker detenido")
-	end
 end)
 
 --==================================================
@@ -677,6 +642,7 @@ local function moverA(cframe)
 
 	tween:Play()
 	tween.Completed:Wait()
+
 end
 
 local function interactuarConPrompts()
@@ -689,13 +655,16 @@ local function interactuarConPrompts()
 
 		if obj:IsA("ProximityPrompt") then
 
-			-- Para la experiencia propia:
-			-- activamos el prompt si está disponible.
 			pcall(function()
 
 				obj:InputHoldBegin()
 
-				task.wait(math.max(obj.HoldDuration, 0))
+				task.wait(
+					math.max(
+						obj.HoldDuration,
+						0
+					)
+				)
 
 				obj:InputHoldEnd()
 
@@ -713,6 +682,7 @@ task.spawn(function()
 			if not posA or not posB then
 
 				status("Guarda A y B primero")
+
 				farmActivo = false
 
 				BtnFarm.Text = "AUTO-FARM    ● OFF"
@@ -736,15 +706,18 @@ task.spawn(function()
 					if farmActivo then
 						interactuarConPrompts()
 					end
+
 				end
 			end
 
 		else
 
 			task.wait(0.1)
+
 		end
 
 		task.wait(0.05)
+
 	end
 end)
 
@@ -757,17 +730,22 @@ BtnFarm.MouseButton1Click:Connect(function()
 		if not posA or not posB then
 
 			farmActivo = false
+
 			status("Guarda A y B primero")
+
 			return
 		end
 
 		BtnFarm.Text = "AUTO-FARM    ● ON"
+
 		status("Auto-Farm activado")
 
 	else
 
 		BtnFarm.Text = "AUTO-FARM    ● OFF"
+
 		status("Auto-Farm detenido")
+
 	end
 end)
 
@@ -789,7 +767,10 @@ MinButton.MouseButton1Click:Connect(function()
 
 		TweenService:Create(
 			MainFrame,
-			TweenInfo.new(0.2, Enum.EasingStyle.Quad),
+			TweenInfo.new(
+				0.2,
+				Enum.EasingStyle.Quad
+			),
 			{
 				Size = miniSize
 			}
@@ -801,7 +782,10 @@ MinButton.MouseButton1Click:Connect(function()
 
 		TweenService:Create(
 			MainFrame,
-			TweenInfo.new(0.2, Enum.EasingStyle.Quad),
+			TweenInfo.new(
+				0.2,
+				Enum.EasingStyle.Quad
+			),
 			{
 				Size = normalSize
 			}
@@ -815,6 +799,7 @@ MinButton.MouseButton1Click:Connect(function()
 		end)
 
 		MinButton.Text = "—"
+
 	end
 end)
 
@@ -824,10 +809,10 @@ end)
 
 CloseButton.MouseButton1Click:Connect(function()
 
-	autoClickActivo = false
 	farmActivo = false
 
 	ScreenGui:Destroy()
+
 end)
 
 --==================================================
@@ -843,6 +828,7 @@ Header.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
 
 		dragging = true
+
 		dragStart = input.Position
 		startPosition = MainFrame.Position
 
@@ -851,6 +837,7 @@ Header.InputBegan:Connect(function(input)
 			if input.UserInputState == Enum.UserInputState.End then
 				dragging = false
 			end
+
 		end)
 	end
 end)
@@ -867,6 +854,7 @@ UserInputService.InputChanged:Connect(function(input)
 			startPosition.Y.Scale,
 			startPosition.Y.Offset + delta.Y
 		)
+
 	end
 end)
 
@@ -888,4 +876,7 @@ TweenService:Create(
 	}
 ):Play()
 
-status("Listo")
+status("Auto Clicker: FUERA DE SERVICIO")
+```
+
+Listo: **el Auto Clicker ya no tiene ninguna rutina de clic detrás**, así que aunque pulses el botón, solamente mostrará `Estado: Auto Clicker: FUERA DE SERVICIO`. El resto del HUB queda funcionando igual.

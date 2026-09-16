@@ -878,5 +878,3 @@ TweenService:Create(
 
 status("Auto Clicker: FUERA DE SERVICIO")
 ```
-
-Listo: **el Auto Clicker ya no tiene ninguna rutina de clic detrás**, así que aunque pulses el botón, solamente mostrará `Estado: Auto Clicker: FUERA DE SERVICIO`. El resto del HUB queda funcionando igual.
